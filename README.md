@@ -1,16 +1,35 @@
-# iOS-KML-Framework
-
 [![Version](http://cocoapod-badges.herokuapp.com/v/iOS-KML-Framework/badge.png)](http://cocoadocs.org/docsets/iOS-KML-Framework)
 [![Platform](http://cocoapod-badges.herokuapp.com/p/iOS-KML-Framework/badge.png)](http://cocoadocs.org/docsets/iOS-KML-Framework)
 
+[![License](http://img.shields.io/:license-mit-blue.svg)](http://opensource.org/licenses/mit-license.php)
+[![Build](https://travis-ci.org/Pierre-Loup/iOS-GPX-Framework.svg)](https://travis-ci.org/Pierre-Loup/iOS-GPX-Framework)
+ 
+iOS KML Framework 
+============================
+
 This is a iOS framework for parsing/generating KML files.
 This Framework parses the KML from a URL or Strings and create Objective-C Instances of KML structure. 
+
+Fork infos
+---------------------------------
+This fork is the "iOS-KML-Framework" pod's source repo.
+
+
+Installation
+---------------------------------
+
+iOS-KML-Framework is available through [CocoaPods](http://cocoapods.org), to install
+it simply add the following line to your Podfile:
+
+```ruby
+platform :ios, '5.1'
+pod 'iOS-GPX-Framework', "~> 0.0"
+```
 
 ## Usage
 
 ```objc
 #import "KML.h"
-...
 
 // Parsing the KML
 
@@ -42,13 +61,6 @@ point.coordinate = coordinate;
 
 - iOS 6.0 or later
 
-## Installation
-
-iOS-KML-Framework is available through [CocoaPods](http://cocoapods.org), to install
-it simply add the following line to your Podfile:
-
-    pod 'iOS-KML-Framework', :git => 'https://github.com/FLCLjp/iOS-KML-Framework.git'
-
 ## Author
 
 Watanabe Toshinori, t@flcl.jp
@@ -56,3 +68,5 @@ Watanabe Toshinori, t@flcl.jp
 ## License
 
 iOS-KML-Framework is available under the MIT license. See the LICENSE file for more info.
+
+it uses [TBXML](http://tbxml.co.uk/TBXML/TBXML_Free.html) Copyright (c) 2009 Tom Bradley
