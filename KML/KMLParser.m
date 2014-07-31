@@ -12,6 +12,7 @@
 #import "KMLRoot.h"
 #import "KMLAbstractContainer.h"
 #import "KMLPlacemark.h"
+#import "TBXML.h"
 
 @implementation KMLParser
 
@@ -33,7 +34,7 @@
 
 + (KMLRoot *)parseKMLWithString:(NSString*)string
 {
-    TBXML *xml = [TBXML tbxmlWithXMLString:string error:nil];
+    TBXML *xml = [[TBXML alloc] initWithXMLString:string error:nil];
     if (xml.rootXMLElement) {
         return [[KMLRoot alloc] initWithXMLElement:xml.rootXMLElement parent:nil];
     }
@@ -43,7 +44,7 @@
 
 + (KMLRoot *)parseKMLWithData:(NSData*)data
 {
-    TBXML *xml = [TBXML tbxmlWithXMLData:data error:nil];
+    TBXML *xml = [[TBXML alloc] initWithXMLData:data error:nil];
     if (xml.rootXMLElement) {
         return [[KMLRoot alloc] initWithXMLElement:xml.rootXMLElement parent:nil];
     }

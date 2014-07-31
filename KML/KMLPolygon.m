@@ -172,10 +172,11 @@
     TBXMLElement *el = [TBXML childElementNamed:name parentElement:element];
     while (el != nil) {
         TBXMLElement *innerEl = [TBXML childElementNamed:[class tagName] parentElement:el];
-        if (innerEl) {
+        while (innerEl != nil) {
             eachBlock([[class alloc] initWithXMLElement:innerEl parent:self]);
+            innerEl = [TBXML nextSiblingNamed:[class tagName] searchFromElement:innerEl];
         }
-        el = [TBXML nextSiblingNamed:[class tagName] searchFromElement:el];
+        el = [TBXML nextSiblingNamed:name searchFromElement:el];
     }
 }
 

@@ -21,7 +21,7 @@
 
 /** A parent KMLElement of the receiver.
  */
-@property (unsafe_unretained, nonatomic) KMLElement *parent;
+@property (weak, nonatomic) KMLElement *parent;
 
 
 /// ---------------------------------
