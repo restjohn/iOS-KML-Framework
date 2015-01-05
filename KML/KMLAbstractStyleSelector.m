@@ -16,6 +16,16 @@
 
 #pragma mark - tag
 
++ styleIDFromURL:(NSString *)styleURL
+{
+    NSString *styleID;
+    NSRange range = [styleURL rangeOfString:@"#"];
+    if (range.length == 1 && range.location == 0) {
+        styleID = [styleURL substringFromIndex:1];
+    }
+    return styleID;
+}
+
 + (NSString *)tagName
 {
     return @"AbstractStyleSelector";

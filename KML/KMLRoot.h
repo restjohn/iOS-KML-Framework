@@ -52,9 +52,22 @@
 /// @name Placemarks
 /// ---------------------------------
 
-/** Return the all plcemarks.
+/** Return the all placemarks.
  @return The KMLPlacemark objects.
  */
 - (NSArray *)placemarks;
+
+/**
+ Return a dictionary of all the shared styles in this KML instance.  The dictionary keys
+ are the objectID values of the styles, and the values are KMLStyleSelector objects.
+ The dictionary will only contain KMLStyleSelector objects that are children of
+ KMLAbstractContainer objects, per the KML reference.
+ 
+ Be aware that this method lazily initializes an internal dictionary, and so is not
+ thread-safe.
+ 
+ @return an NSMutableDictionary with NSString keys and KMLStyleSelector values
+ */
+- (NSMutableDictionary *)sharedStyles;
 
 @end

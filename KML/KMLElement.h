@@ -23,6 +23,11 @@
  */
 @property (weak, nonatomic) KMLElement *parent;
 
+/**
+ @return the root ancestor of this element
+ */
+- (KMLElement *)root;
+
 
 /// ---------------------------------
 /// @name KML

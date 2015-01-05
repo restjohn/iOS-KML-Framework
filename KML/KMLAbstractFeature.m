@@ -19,8 +19,11 @@
 #import "KMLAbstractOverlay.h"
 #import "KMLAbstractContainer.h"
 #import "KMLStyle.h"
+#import "KMLStyleMap.h"
 #import "KMLDocument.h"
 #import "KMLData.h"
+#import "KMLRoot.h"
+#import "KMLPair.h"
 
 @implementation KMLAbstractFeature {
     NSString *_visibilityValue;
@@ -216,84 +219,103 @@
 
 - (KMLStyle *)style
 {
-    KMLStyle *style;
+    KMLStyle *style = [KMLStyle new];
+    style.parent = self;
     
-    NSRange range = [self.styleUrl rangeOfString:@"#"];
-    if (range.length == 1 && range.location == 0) {
-        NSString *styleID = [self.styleUrl substringFromIndex:1];
-        
-        KMLElement *element = self.parent;
-        while (element) {
-            if ([element isKindOfClass:[KMLDocument class]]) {
-                KMLDocument *document = (KMLDocument *)element;
-                for (KMLAbstractStyleSelector *styleSelector in document.styleSelectors) {
-                    if ([styleSelector isKindOfClass:[KMLStyle class]]) {
-                        KMLStyle *sharedStyle = (KMLStyle *)styleSelector;
-                        if ([styleID isEqualToString:sharedStyle.objectID]) {
-                            if (!style) {
-                                style = [KMLStyle new];
-                                style.parent = self;
-                            }
-                            
-                            if (sharedStyle.iconStyle) {
-                                style.iconStyle = sharedStyle.iconStyle;
-                            }
-                            if (sharedStyle.labelStyle) {
-                                style.labelStyle = sharedStyle.labelStyle;
-                            }
-                            if (sharedStyle.lineStyle) {
-                                style.lineStyle = sharedStyle.lineStyle;
-                            }
-                            if (sharedStyle.polyStyle) {
-                                style.polyStyle = sharedStyle.polyStyle;
-                            }
-                            if (sharedStyle.balloonStyle) {
-                                style.balloonStyle = sharedStyle.balloonStyle;
-                            }
-                            if (sharedStyle.listStyle) {
-                                style.listStyle = sharedStyle.listStyle;
-                            }
-                            break;
-                        }
-                    }
-                }
+    KMLRoot *root = (KMLRoot *)[self root];
+    NSDictionary *sharedStyles = [root sharedStyles];
+    
+    NSString *styleID = [KMLAbstractStyleSelector styleIDFromURL:self.styleUrl];
+    if (styleID) {
+        KMLAbstractStyleSelector *styleSelector = sharedStyles[styleID];
+        if ([styleSelector isKindOfClass:[KMLStyle class]]) {
+            KMLStyle *sharedStyle = (KMLStyle *)styleSelector;
+            if ([styleID isEqualToString:sharedStyle.objectID]) {
+                style = [KMLAbstractFeature mergeStyleFrom:sharedStyle toStyle:style];
             }
-            
-            element = element.parent;
+        }
+        else if ([styleSelector isKindOfClass:[KMLStyleMap class]]) {
+            KMLStyleMap *styleMap = (KMLStyleMap *)styleSelector;
+            KMLStyle *mappedStyle = [KMLAbstractFeature fetchMappedStyleFrom:styleMap forModeKey:@"normal" fromSharedStyles:sharedStyles];
+            style = [KMLAbstractFeature mergeStyleFrom:mappedStyle toStyle:style];
         }
     }
 
+    // TODO: enforce only one inline style on Placemarks and overlays?
     for (KMLAbstractStyleSelector *styleSelector in self.styleSelectors) {
         if ([styleSelector isKindOfClass:[KMLStyle class]]) {
             KMLStyle *childStyle = (KMLStyle *)styleSelector;
-
-            if (!style) {
-                style = [KMLStyle new];
-                style.parent = self;
-            }
-
-            if (childStyle.iconStyle) {
-                style.iconStyle = childStyle.iconStyle;
-            }
-            if (childStyle.labelStyle) {
-                style.labelStyle = childStyle.labelStyle;
-            }
-            if (childStyle.lineStyle) {
-                style.lineStyle = childStyle.lineStyle;
-            }
-            if (childStyle.polyStyle) {
-                style.polyStyle = childStyle.polyStyle;
-            }
-            if (childStyle.balloonStyle) {
-                style.balloonStyle = childStyle.balloonStyle;
-            }
-            if (childStyle.listStyle) {
-                style.listStyle = childStyle.listStyle;
-            }
+            style = [KMLAbstractFeature mergeStyleFrom:childStyle toStyle:style];
+            style.parent = self;
+        }
+        else if ([styleSelector isKindOfClass:[KMLStyleMap class]]) {
+            KMLStyleMap *styleMap = (KMLStyleMap *)styleSelector;
+            KMLStyle *mappedStyle = [KMLAbstractFeature fetchMappedStyleFrom:styleMap forModeKey:@"normal" fromSharedStyles:sharedStyles];
+            style = [KMLAbstractFeature mergeStyleFrom:mappedStyle toStyle:style];
         }
     }
 
     return style;
+}
+
+/**
+ Assign the style attribute values that exist in sourceStyle to the targetStyle.
+ Return the given targetStyle.  If targetStyle is nil, create a new style that
+ will be copy of sourceStyle.
+ @param sourceStyle the source of the style attributes to assign
+ @param targetStyle the 
+ @return the given KMLStyle targetStyle
+ */
++ (KMLStyle *)mergeStyleFrom:(KMLStyle *)sourceStyle toStyle:(KMLStyle *)targetStyle
+{
+    if (!targetStyle) {
+        targetStyle = [KMLStyle new];
+    }
+    
+    if (!sourceStyle) {
+        return targetStyle;
+    }
+    
+    if (sourceStyle.iconStyle) {
+        targetStyle.iconStyle = sourceStyle.iconStyle;
+    }
+    if (sourceStyle.labelStyle) {
+        targetStyle.labelStyle = sourceStyle.labelStyle;
+    }
+    if (sourceStyle.lineStyle) {
+        targetStyle.lineStyle = sourceStyle.lineStyle;
+    }
+    if (sourceStyle.polyStyle) {
+        targetStyle.polyStyle = sourceStyle.polyStyle;
+    }
+    if (sourceStyle.balloonStyle) {
+        targetStyle.balloonStyle = sourceStyle.balloonStyle;
+    }
+    if (sourceStyle.listStyle) {
+        targetStyle.listStyle = sourceStyle.listStyle;
+    }
+    
+    return targetStyle;
+}
+
++ (KMLStyle *)fetchMappedStyleFrom:(KMLStyleMap *)styleMap forModeKey:(NSString *)key fromSharedStyles:(NSDictionary *)sharedStyles
+{
+    // TODO:
+    // - how many levels of indirection does this need to support?
+    //   there is a danger of reference cycles in style urls
+    // - can a StyleMap merge a styleUrl and an inline style like
+    //   a Placemark, etc?
+    for (KMLPair *pair in styleMap.pairs) {
+        if ([pair.key isEqualToString:key]) {
+            KMLStyle *mappedStyle = pair.style;
+            if (!mappedStyle && pair.styleUrl) {
+                NSString *styleID = [KMLAbstractStyleSelector styleIDFromURL:pair.styleUrl];
+                mappedStyle = sharedStyles[styleID];
+            }
+            return mappedStyle;
+        }
+    }
+    return nil;
 }
 
 - (NSString *)extendedDataValueForName:(NSString *)name

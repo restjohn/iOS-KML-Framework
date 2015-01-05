@@ -19,4 +19,12 @@
  */
 @interface KMLAbstractStyleSelector : KMLAbstractObject
 
+/**
+ This is a convenience method to strip the hash character from the given
+ style URL fragment in order to locate a KMLAbstractStyleSelector instance
+ whose objectID property matches the value this method returns.  For 
+ example, an input of '#someStyle' returns 'someStyle'.
+ */
++ styleIDFromURL:(NSString *)styleURL;
+
 @end

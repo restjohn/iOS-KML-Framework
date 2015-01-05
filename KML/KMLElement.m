@@ -47,6 +47,15 @@
 
 #pragma mark - Elements
 
+- (KMLElement *)root
+{
+    KMLElement *cursor = self;
+    while (cursor.parent) {
+        cursor = cursor.parent;
+    }
+    return cursor;
+}
+
 - (NSString *)textForSingleChildElementNamed:(NSString *)name xmlElement:(TBXMLElement *)element
 {
     return [self textForSingleChildElementNamed:name xmlElement:element required:NO];

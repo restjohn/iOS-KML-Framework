@@ -26,6 +26,7 @@
 @synthesize networkLinkControl = _networkLinkControl;
 @synthesize feature = _feature;
 
+NSMutableDictionary *_sharedStyles;
 
 #pragma mark - Instance
 
@@ -89,6 +90,21 @@
     return [NSArray arrayWithArray:array];
 }
 
+- (NSMutableDictionary *)sharedStyles
+{
+    if (_sharedStyles) {
+        return _sharedStyles;
+    }
+    
+    _sharedStyles = [NSMutableDictionary new];
+    
+    if ([self.feature isKindOfClass:[KMLAbstractContainer class]]) {
+        _sharedStyles = [KMLRoot populateSharedStyles:_sharedStyles fromContainer:(KMLAbstractContainer *)self.feature];
+    }
+    
+    return [_sharedStyles mutableCopy];
+}
+
 
 #pragma mark - Private methods
 
@@ -108,6 +124,18 @@
     return [NSArray arrayWithArray:array];
 }
 
++ (NSMutableDictionary *)populateSharedStyles:(NSMutableDictionary *)sharedStyles fromContainer:(KMLAbstractContainer *)container
+{
+    for (KMLAbstractStyleSelector *styleSelector in container.styleSelectors) {
+        sharedStyles[styleSelector.objectID] = styleSelector;
+    }
+    for (KMLAbstractFeature *feature in container.features) {
+        if ([feature isKindOfClass:[KMLAbstractContainer class]]) {
+            [KMLRoot populateSharedStyles:sharedStyles fromContainer:feature];
+        }
+    }
+    return sharedStyles;
+}
 
 #pragma mark - Tag
 
