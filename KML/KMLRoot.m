@@ -92,14 +92,12 @@ NSMutableDictionary *_sharedStyles;
 
 - (NSMutableDictionary *)sharedStyles
 {
-    if (_sharedStyles) {
-        return _sharedStyles;
+    if (!_sharedStyles) {
+        _sharedStyles = [[NSMutableDictionary alloc] init];
     }
     
-    _sharedStyles = [NSMutableDictionary new];
-    
     if ([self.feature isKindOfClass:[KMLAbstractContainer class]]) {
-        _sharedStyles = [KMLRoot populateSharedStyles:_sharedStyles fromContainer:(KMLAbstractContainer *)self.feature];
+        [KMLRoot populateSharedStyles:_sharedStyles fromContainer:(KMLAbstractContainer *)self.feature];
     }
     
     return [_sharedStyles mutableCopy];
@@ -124,17 +122,17 @@ NSMutableDictionary *_sharedStyles;
     return [NSArray arrayWithArray:array];
 }
 
-+ (NSMutableDictionary *)populateSharedStyles:(NSMutableDictionary *)sharedStyles fromContainer:(KMLAbstractContainer *)container
++ (NSMutableDictionary *)populateSharedStyles:(NSMutableDictionary *)styles fromContainer:(KMLAbstractContainer *)container
 {
     for (KMLAbstractStyleSelector *styleSelector in container.styleSelectors) {
-        sharedStyles[styleSelector.objectID] = styleSelector;
+        styles[styleSelector.objectID] = styleSelector;
     }
     for (KMLAbstractFeature *feature in container.features) {
         if ([feature isKindOfClass:[KMLAbstractContainer class]]) {
-            [KMLRoot populateSharedStyles:sharedStyles fromContainer:feature];
+            [KMLRoot populateSharedStyles:styles fromContainer:(KMLAbstractContainer *)feature];
         }
     }
-    return sharedStyles;
+    return styles;
 }
 
 #pragma mark - Tag
