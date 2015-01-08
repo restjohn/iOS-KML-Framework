@@ -24,6 +24,8 @@
 #import "KMLData.h"
 #import "KMLRoot.h"
 #import "KMLPair.h"
+#import "KMLIconStyle.h"
+#import "KMLLineStyle.h"
 
 @implementation KMLAbstractFeature {
     NSString *_visibilityValue;
@@ -277,13 +279,13 @@
     }
     
     if (sourceStyle.iconStyle) {
-        targetStyle.iconStyle = sourceStyle.iconStyle;
+        targetStyle.iconStyle = [KMLAbstractFeature mergeIconStyleFrom:sourceStyle.iconStyle to:targetStyle.iconStyle];
     }
     if (sourceStyle.labelStyle) {
         targetStyle.labelStyle = sourceStyle.labelStyle;
     }
     if (sourceStyle.lineStyle) {
-        targetStyle.lineStyle = sourceStyle.lineStyle;
+        targetStyle.lineStyle = [KMLAbstractFeature mergeLineStyleFrom:sourceStyle.lineStyle to:targetStyle.lineStyle];
     }
     if (sourceStyle.polyStyle) {
         targetStyle.polyStyle = sourceStyle.polyStyle;
@@ -296,6 +298,52 @@
     }
     
     return targetStyle;
+}
+
++ (KMLIconStyle *)mergeIconStyleFrom:(KMLIconStyle *)source to:(KMLIconStyle *)target
+{
+    if (!target) {
+        target = [KMLIconStyle new];
+    }
+    
+    if (source.color) {
+        target.color = source.color;
+    }
+    if (source.icon) {
+        target.icon = source.icon;
+    }
+    // TODO: check these
+//    if (source.colorMode) {
+//        target.colorMode = source.colorMode;
+//    }
+//    if (source.scale) {
+//        target.scale = source.scale;
+//    }
+//    if (source.heading) {
+//        target.heading = source.heading;
+//    }
+//    if (source.hotSpot) {
+//        target.hotSpot = source.hotSpot;
+//    }
+    
+    return target;
+}
+
++ (KMLLineStyle *)mergeLineStyleFrom:(KMLLineStyle *)source to:(KMLLineStyle *)target
+{
+    if (!target) {
+        target = [KMLLineStyle new];
+    }
+    
+    if (source.color) {
+        target.color = source.color;
+    }
+    if (source.width) {
+        target.width = source.width;
+    }
+    // TODO: other elements
+    
+    return target;
 }
 
 + (KMLStyle *)fetchMappedStyleFrom:(KMLStyleMap *)styleMap forModeKey:(NSString *)key fromSharedStyles:(NSDictionary *)sharedStyles
